@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>말랑말랑 역사 용어 사전 📜</title>
+    <!-- 구글 폰트 (Gamja Flower & Jua) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gamja+Flower&family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome 아이콘 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- CSS 스타일시트 연결 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 헤더 영역 -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo"><i class="fa-solid fa-book-bookmark text-yellow"></i> 말랑말랑 역사 사전 <span class="badge-tag">중학 역사</span></h1>
+            <p class="sub-logo">웹툰처럼 재미있게 배우는 역사 용어 탐험대!</p>
+        </div>
+
+        <!-- 유저 상태 및 보상 현황 -->
+        <div class="user-status-card">
+            <div class="status-top">
+                <span class="user-rank" id="userRank"><i class="fa-solid fa-crown text-yellow"></i> 초보 사학자</span>
+                <span class="user-score" id="userPoints"><i class="fa-solid fa-star text-yellow"></i> 0 pt</span>
+            </div>
+            <div class="mission-box">
+                <div class="mission-info">
+                    <span><i class="fa-solid fa-magnifying-glass"></i> 단어 탐색 미션</span>
+                    <span id="searchCountText"><b>0</b> / 5개 탐색 완료</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" id="searchProgress"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main class="container">
+        
+        <!-- 내비게이션 탭 -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" id="tabDict" onclick="switchTab('dict')"><i class="fa-solid fa-book-open"></i> 용어 사전</button>
+            <button class="tab-btn" id="tabQuiz" onclick="switchTab('quiz')">
+                <i class="fa-solid fa-gamepad"></i> 도전! 퀴즈
+                <span class="badge-lock" id="quizLockBadge"><i class="fa-solid fa-lock"></i></span>
+            </button>
+            <button class="tab-btn" id="tabBadge" onclick="switchTab('badge')"><i class="fa-solid fa-award"></i> 나의 업적</button>
+        </nav>
+
+        <!-- [탭 1] 사전 탐색 섹션 -->
+        <section id="sectionDict" class="tab-content active">
+            <!-- 검색 및 필터 -->
+            <div class="search-box-container">
+                <div class="search-input-group">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="궁금한 역사 단어를 입력해보세요! (예: 남하정책, 천도, 성조기...)" oninput="handleSearch()">
+                    <button class="clear-btn" onclick="clearSearch()"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                
+                <div class="filter-tags" id="categoryFilters">
+                    <button class="tag-btn active" onclick="filterCategory('all')">전체보기</button>
+                    <button class="tag-btn" onclick="filterCategory('일반 용어')">일반 용어/동사</button>
+                    <button class="tag-btn" onclick="filterCategory('인물')">인물</button>
+                    <button class="tag-btn" onclick="filterCategory('유물/유적')">유물/유적</button>
+                    <button class="tag-btn" onclick="filterCategory('제도/사건')">제도/사건</button>
+                </div>
+            </div>
+
+            <!-- 단어 카드 리스트 -->
+            <div class="word-grid" id="wordGrid">
+                <!-- JS로 카드가 동적 생성됩니다 -->
+            </div>
+            
+            <!-- 검색 결과 없음 표시 -->
+            <div id="noResults" class="empty-state hidden">
+                <div class="speech-bubble">
+                    <p>앗! 찾는 단어가 없어요... 😭 다른 단어로 검색해볼까요?</p>
+                </div>
+                <img src="https://api.iconify.design/noto:thinking-face.svg" alt="생각중" class="empty-img">
+            </div>
+        </section>
+
+        <!-- [탭 2] 퀴즈 & 예문 만들기 섹션 -->
+        <section id="sectionQuiz" class="tab-content">
+            <!-- 잠금 상태 안내 -->
+            <div id="quizLockedState" class="quiz-locked-card">
+                <div class="speech-bubble alert">
+                    <p>🔒 <b>퀴즈가 아직 잠겨있어요!</b><br>사전에서 용어를 <b>5개 이상 탐색</b>하면 퀴즈 도전 자격이 생깁니다! (현재 <span id="lockedCount">0</span>/5)</p>
+                </div>
+                <button class="comic-btn primary" onclick="switchTab('dict')"><i class="fa-solid fa-arrow-left"></i> 용어 찾으러 가기</button>
+            </div>
+
+            <!-- 퀴즈 플레이 영역 -->
+            <div id="quizPlayState" class="hidden">
+                <div class="quiz-card comic-box">
+                    <div class="quiz-header">
+                        <span class="quiz-step" id="quizStepText">문제 1 / 3</span>
+                        <span class="quiz-timer"><i class="fa-regular fa-clock"></i> 자율 학습 모드</span>
+                    </div>
+
+                    <!-- 문제 유형 1: 4지선다형 -->
+                    <div id="multipleChoiceContainer">
+                        <div class="question-box">
+                            <span class="q-badge">Q.</span>
+                            <h3 class="question-text" id="quizQuestion">질문이 이곳에 표시됩니다.</h3>
+                        </div>
+                        <div class="options-grid" id="quizOptions">
+                            <!-- JS로 보기 생성 -->
+                        </div>
+                    </div>
+
+                    <!-- 문제 유형 2: 예문 만들기 -->
+                    <div id="sentenceContainer" class="hidden">
+                        <div class="question-box">
+                            <span class="q-badge">기억에 쏙!</span>
+                            <h3 class="question-text">제시된 역사 단어를 사용하여 나만의 <b>멋진 예문</b>을 완성해보세요!</h3>
+                        </div>
+                        <div class="target-word-display" id="targetWordDisplay">
+                            제시 단어: <span id="targetWordTitle">남하정책</span>
+                        </div>
+                        <div class="sentence-input-group">
+                            <textarea id="userSentenceInput" rows="3" placeholder="예시: 고구려의 장수왕은 남하정책을 펼쳐 수도를 평양으로 옮겼다."></textarea>
+                            <button class="comic-btn secondary" onclick="submitSentence()"><i class="fa-solid fa-paper-plane"></i> 예문 제출하고 포인트 받기!</button>
+                        </div>
+                    </div>
+
+                    <div id="quizFeedback" class="quiz-feedback hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- [탭 3] 업적 및 배지 섹션 -->
+        <section id="sectionBadge" class="tab-content">
+            <div class="badge-container comic-box">
+                <h2 class="section-title"><i class="fa-solid fa-trophy text-yellow"></i> 나의 역사 모험 업적</h2>
+                <p class="section-desc">단어를 탐색하고 퀴즈를 풀어 귀여운 배지들을 수집해보세요!</p>
+
+                <div class="badges-grid" id="badgesGrid">
+                    <!-- JS로 배지 출력 -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 상세보기 모달 (웹툰 말풍선 스타일) -->
+    <div id="wordModal" class="modal-overlay hidden" onclick="closeModalOnOuter(event)">
+        <div class="modal-content comic-box">
+            <button class="modal-close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div id="modalBody">
+                <!-- JS에서 모달 상세 내용이 동적으로 들어갑니다 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 스크립트 연결 -->
+    <script src="script.js"></script>
+</body>
+</html>
